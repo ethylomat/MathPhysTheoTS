@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+  <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+<script src="semantic/dist/semantic.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <script src="//cdn.jsdelivr.net/jquery.color-animation/1/mainfile"></script>
+<style type="text/css">
+
+	body {
+
+		background-color: #2c3e50;
+	}
+</style>
+
+  </head>
+  <body>
+
+
+
+	<div style="padding-top: 100px;" ng-app="myApp" ng-controller="myCtrl">
+
+<div style="width: 600px;  margin: 0 auto; padding: 40px;" class="ui segment">
+
+
+<div style="">
+    <p style="float: right;"><img src="assets/mathphys.png" width="200px"></p>
+
+</div>
+<h1>MathPhysTheoTS</h1>
+
+	<p style="margin: 0px;"><b>Arrived:</b> {{ count_arrived }}</p>
+	<p style="margin: 4px 0px;"><b>Status:</b> {{ status }}</p>
+	<p>{{ arrived_at }}</p>
+<div style="margin-top: 30px;" class="ui form">
+<form ng-submit="sendPost()">
+<div class="field">
+		 <label>Ticket-Code</label>
+	    <input   onblur="this.focus()" ng-model="newTicket" autofocus />
+	    </div>
+	    <button  type="submit">Send</button>
+	</form>
+
+</div>
+</div>
+
+	</div>
+
+	<script>
+	var beep1 = new Audio('sounds/burp.mp3');
+	var beep2 = new Audio('sounds/beep2.mp3');
+	var app = angular.module('myApp', []);
+	app.controller('myCtrl', function($scope, $http) {
+	    $http.get("http://0.0.0.0:5000/").then(function(response) {
+	        $scope.myData = response.data.not_arrived;
+	        $scope.count_arrived = response.data.count_arrived;
+
+	    });
+
+	    function blink(color) {
+	    	setTimeout(function(){
+    			document.body.style.background = "#2c3e50";
+			}, 900);
+
+	    	document.body.style.background = color;
+	    }
+
+	    $scope.sendPost = function() {
+		    $http.post("http://0.0.0.0:5000/" + $scope.newTicket + "/").then(function(response) {
+		        if (response.data.status == "arr") {
+		        	$scope.status = "Ticket OK";
+		        	$scope.arrived_at = "";
+				beep1.play();
+		        	blink("#39d179");
+		        }
+		      	if (response.data.status == "a_arr") {
+		      		$scope.status = "Ticket has already been used " + response.data.human_timestamp;
+		      		$scope.arrived_at = "";
+		      		beep2.play();
+		        	blink("#e74c3c");
+		        }
+		        if (response.data.status == "nil") {
+		        	$scope.status = "Not in list";
+		        	$scope.arrived_at = "";
+		        	beep2.play();
+		        	blink("#9b59b6");
+		        }
+		        $scope.count_arrived = response.data.count_arrived;
+		    });
+		    $scope.newTicket = "";
+
+
+    	}
+
+
+	});
+
+
+
+	</script>
+
+
+  </body>
+</html>
